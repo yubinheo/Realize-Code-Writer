@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- CSS Dependencies -->
+
+    <link rel="stylesheet" href="style.css">
+	  <script src="https://unpkg.com/codeflask/build/codeflask.min.js"></script>
+  </head>
+  <body>
+	  
+    <ul>
+      <li><a class="active" href="#">Home</a></li>
+      <li><a href="#" id="name"></a></li>
+    </ul>
+
+  <div class="code" id="codeArea"></div>
+  <h3 id="resultArea"></h3>
+
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+
+  <script src="/socket.io/socket.io.js"></script>
+
+  <script>
+
+    function getRandomWords(count) {
+      var text = "";
+      var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+      for (var i = 0; i < count; i++)
+          text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+      return text;
+    }
+
+    const socket = io();
+    const name = `Writer-${getRandomWords(5)}`;
+
+    $('#name').text(`당신의 이름 : ${name}`);
+
+    const flask = new CodeFlask('#codeArea', {
+      language: 'js',
+      lineNumbers: true
+    })
+    
+    let code = String.raw `console.log("Hello World!");`;
+    
+    flask.updateCode(code)
+    
+      
+    $(".code").on("change keyup paste", function() {
+      const code = flask.getCode();
+      socket.emit('write', code, name);
+    });
+
+    $(".code").keydown(function(key) {
+      if (key.keyCode == 13) {
+        const code = flask.getCode();
+        eval(code);
+      }
+    });
+
+      socket.on('write2', (msg, name) => {
+        flask.updateCode(msg);
+      });
+
+  </script>
+  </body>
+</html>
